@@ -53,21 +53,11 @@ stringData:
   AWS_REGION: "ap-south-1"
 ```
 
-**k8s/serviceaccount.yaml**:
-```yaml
-annotations:
-  eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/your-aurora-access-role  # From Terraform output
-```
-
 **k8s/deployment.yaml**:
 ```yaml
 image: ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/flask-app:latest  # Your image
 ```
 
-**k8s/ingress.yaml**:
-```yaml
-- host: your-domain.com  # Your domain
-```
 
 ### 2. Deploy to Kubernetes
 
