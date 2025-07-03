@@ -12,10 +12,10 @@ This project demonstrates a complete Kubernetes microservice deployment followin
 
 ## Project Structure
 ```
-├── app/          # Containerized application
+├── app/                       # Containerized application
 ├── app/k8s/                   # K8s manifests          
-├── Monitoring/         # Monitoring setup
-└── docs/                    # Documentation
+├── Monitoring/                # Monitoring setup
+└── docs/                      # Documentation
 ```
 
 ## Quick Start
