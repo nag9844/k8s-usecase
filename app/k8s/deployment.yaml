@@ -13,7 +13,7 @@ spec:
         app: flask-login
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
+        prometheus.io/port: "5000"
         prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: flask-sa
