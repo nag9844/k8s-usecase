@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-login-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-login
+  template:
+    metadata:
+      labels:
+        app: flask-login
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: flask-sa
+      imagePullSecrets:
+      - name: ecr-secret
+
+      # Shared volume for logs
+      volumes:
+      - name: log-volume
+        emptyDir: {}
+
+      initContainers:
+      - name: wait-for-mysql
+        image: busybox
+        command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
+
+      containers:
+      - name: flask-app
+        image: 199570228070.dkr.ecr.ap-south-1.amazonaws.com/flaskapp:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: flask-config
+        - secretRef:
+            name: flask-secrets
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+        securityContext:
+          runAsUser: 1001
+          runAsNonRoot: true
+        volumeMounts:
+        - name: log-volume
+          mountPath: /app/logs
+
+      - name: sidecar-logger
+        image: busybox
+        command: ["sh", "-c", "tail -n+1 -F /app/logs/app.log"]
+        volumeMounts:
+        - name: log-volume
+          mountPath: /app/logs
