@@ -7,7 +7,6 @@ import os
 import time
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a secure value in production
 
 # === Prometheus Metrics ===
 metrics = PrometheusMetrics(app)
