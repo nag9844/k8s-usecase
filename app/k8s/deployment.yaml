@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-login-app
+  name: flask-app-app
 spec:
   replicas: 7
   selector:
     matchLabels:
-      app: flask-login
+      app: flask-app
   template:
     metadata:
       labels:
-        app: flask-login
+        app: flask-app
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "5000"
@@ -34,7 +34,7 @@ spec:
         command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
       containers:
       - name: flask-app
-        image: 211125325699.dkr.ecr.us-east-1.amazonaws.com/flask-app:v5
+        image: 199570228070.dkr.ecr.ap-south-1.amazonaws.com/flaskapp:latest
         ports:
         - containerPort: 5000
         envFrom:

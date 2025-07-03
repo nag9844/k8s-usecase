@@ -18,7 +18,7 @@ services:
     depends_on:
       mysql-db:
         condition: service_healthy
-    container_name: flask-login-app
+    container_name: flask-app-app
     restart: always
     ports:
     - 5000:5000
