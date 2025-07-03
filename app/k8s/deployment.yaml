@@ -68,7 +68,7 @@ spec:
 
       - name: sidecar-logger
         image: busybox
-        command: ["sh", "-c", "tail -n+1 -F /app/logs/app.log"]
+        command: ["sh", "-c", "tail -n+1 -F /var/logs/app.log"]
         volumeMounts:
         - name: log-volume
-          mountPath: /app/logs
+          mountPath: /var/logs
