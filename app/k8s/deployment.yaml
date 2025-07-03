@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: flask-login-app
 spec:
-  replicas: 3
+  replicas: 7
   selector:
     matchLabels:
       app: flask-login
@@ -17,22 +17,24 @@ spec:
         prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: flask-sa
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: flask-node
+                    operator: In
+                    values:
+                      - enabled
       imagePullSecrets:
       - name: ecr-secret
-
-      # Shared volume for logs
-      volumes:
-      - name: log-volume
-        emptyDir: {}
-
       initContainers:
       - name: wait-for-mysql
         image: busybox
         command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
-
       containers:
       - name: flask-app
-        image: 199570228070.dkr.ecr.ap-south-1.amazonaws.com/flaskapp:latest
+        image: 211125325699.dkr.ecr.us-east-1.amazonaws.com/flask-app:v5
         ports:
         - containerPort: 5000
         envFrom:
@@ -40,22 +42,22 @@ spec:
             name: flask-config
         - secretRef:
             name: flask-secrets
-        readinessProbe:
-          httpGet:
-            path: /login
-            port: 5000
-          initialDelaySeconds: 10
-          periodSeconds: 5
         livenessProbe:
           httpGet:
             path: /login
             port: 5000
           initialDelaySeconds: 15
           periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
         resources:
           limits:
             memory: "256Mi"
-            cpu: "500m"
+            cpu: "250m"
           requests:
             memory: "128Mi"
             cpu: "250m"
@@ -64,11 +66,20 @@ spec:
           runAsNonRoot: true
         volumeMounts:
         - name: log-volume
-          mountPath: /app/logs
-
+          mountPath: /var/log/flask
       - name: sidecar-logger
         image: busybox
-        command: ["sh", "-c", "tail -n+1 -F /var/logs/app.log"]
+        command: ["sh", "-c", "tail -n+1 -F /var/log/flask/app.log"]
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
         volumeMounts:
         - name: log-volume
-          mountPath: /var/logs
+          mountPath: /var/log/flask
+      volumes:
+      - name: log-volume
+        emptyDir: {}
